@@ -61,4 +61,8 @@ public class TransactionHeaderController {
         }
         return false;
     }
+
+    public List<TransactionHeader> getAllTransactionHeadersWithCustomerName() {
+        return repository.getAllHeadersWithCustomerName();
+    }
 }

@@ -71,7 +71,7 @@ public class CustomerListView extends JFrame {
         JButton refreshButton = new JButton("Refresh");
         JButton closeButton = new JButton("Close");
 
-        addButton.addActionListener(e -> new CustomerForm().setVisible(true));
+        addButton.addActionListener(e -> onAddCustomer());
         refreshButton.addActionListener(e -> loadCustomerData());
         closeButton.addActionListener(e -> dispose());
 
@@ -82,7 +82,16 @@ public class CustomerListView extends JFrame {
         return buttonPanel;
     }
 
-    private void loadCustomerData() {
+    private void onAddCustomer() {
+        CustomerForm form = new CustomerForm(this);
+        form.setVisible(true);
+    }
+
+    private CustomerListView getCurrentForm() {
+        return this;
+    }
+
+    public void loadCustomerData() {
         List<Customer> customers = controller.getAllCustomers();
         tableModel.setRowCount(0);
 
@@ -145,7 +154,7 @@ public class CustomerListView extends JFrame {
             if (currentCode != null) {
                 Customer customer = controller.getCustomerByCode(currentCode);
                 if (customer != null) {
-                    CustomerForm form = new CustomerForm();
+                    CustomerForm form = new CustomerForm(getCurrentForm());
                     form.setCustomer(customer);
                     form.setVisible(true);
                 }
@@ -170,7 +179,7 @@ public class CustomerListView extends JFrame {
                             table.getCellEditor().stopCellEditing();
                         }
 
-                        loadCustomerData(); 
+                        loadCustomerData();
                     } catch (RuntimeException ex) {
                         JOptionPane.showMessageDialog(
                                 CustomerListView.this,

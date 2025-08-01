@@ -16,32 +16,42 @@ import salesapp.repository.TransactionStatus;
 import salesapp.utils.IconUtils;
 import salesapp.view.transaction.line.TransactionLineForm;
 
-public class TransactionHeaderDetailView extends JFrame {
+public final class TransactionHeaderDetailView extends JFrame {
 
     private final TransactionHeader header;
     private final TransactionLineController lineController = new TransactionLineController();
     private final CustomerFormController customerController = new CustomerFormController();
     private final ProductFormController productController = new ProductFormController();
+    
+    private final TransactionHeaderListView displayView;
 
     private DefaultTableModel tableModel;
     private JTable table;
 
-    public TransactionHeaderDetailView(TransactionHeader header) {
+    public TransactionHeaderDetailView(TransactionHeader header, TransactionHeaderListView displayView) {
         this.header = header;
+        this.displayView = displayView;
 
-        setTitle("Transaction Detail - " + header.getInvoiceNumber());
-        setSize(800, 500);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLayout(new BorderLayout(10, 10));
-
-        add(buildHeaderInfoPanel(), BorderLayout.NORTH);
-        add(buildTablePanel(), BorderLayout.CENTER);
-        add(buildBottomPanel(), BorderLayout.SOUTH);
+        createScreen();
+        initComponent();
 
         loadTransactionLines();
 
         setVisible(true);
+    }
+
+    private void createScreen() {
+        setTitle("Transaction Detail - " + header.getInvoiceNumber());
+        setSize(800, 500);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLayout(new BorderLayout(10, 10)); 
+    }
+
+    private void initComponent() { 
+        add(buildHeaderInfoPanel(), BorderLayout.NORTH);
+        add(buildTablePanel(), BorderLayout.CENTER);
+        add(buildBottomPanel(), BorderLayout.SOUTH);
     }
 
     private JPanel buildHeaderInfoPanel() {
@@ -222,9 +232,7 @@ public class TransactionHeaderDetailView extends JFrame {
             List<TransactionLine> lines = lineController.getTransactionLinesByTransactionID(header.getTransactionID());
 
             double totalNet = 0;
-            for (TransactionLine line : lines) {
-                totalNet += line.getNetPrice();
-            }
+            totalNet = lines.stream().map((line) -> line.getNetPrice()).reduce(totalNet, (accumulator, _item) -> accumulator + _item);
 
             TransactionHeaderController headerController = new TransactionHeaderController();
             boolean success = headerController.updateTotalAndStatus(header.getTransactionID(), totalNet, "submitted");
@@ -249,8 +257,9 @@ public class TransactionHeaderDetailView extends JFrame {
                 header.setStatus("submitted");
                 header.setTotal(totalNet);
 
+                displayView.loadData();
                 dispose();
-                new TransactionHeaderDetailView(header); // reload
+                new TransactionHeaderDetailView(header, displayView); // reload
             } else {
                 JOptionPane.showMessageDialog(this, "Gagal menyimpan status transaksi.");
             }

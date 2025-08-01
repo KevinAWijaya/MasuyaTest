@@ -165,4 +165,29 @@ public class TransactionHeaderDAO {
             return false;
         }
     }
+
+    public List<TransactionHeader> getAllWithCustomerName() {
+        List<TransactionHeader> list = new ArrayList<>();
+        String sql = "SELECT th.*, c.CustomerName "
+                + "FROM TransactionHeader th "
+                + "JOIN Customers c ON th.CustomerID = c.CustomerID "
+                + "ORDER BY th.InvoiceDate DESC";
+
+        try (
+                Connection conn = DBHelper.getInstance().getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                TransactionHeader header = extractTransactionHeader(rs);
+                header.setCustomerName(rs.getString("CustomerName")); // ← dari JOIN
+                list.add(header);
+            }
+
+        } catch (SQLException e) {
+            System.err.println("GetAllWithCustomerName Failed:");
+            e.printStackTrace();
+        }
+
+        return list;
+    }
 }

@@ -13,22 +13,27 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
-public class TransactionHeaderListView extends JFrame {
+public final class TransactionHeaderListView extends JFrame {
 
     private final TransactionHeaderController controller = new TransactionHeaderController();
+
     private JTable table;
     private DefaultTableModel tableModel;
 
     private List<TransactionHeader> headerList;
 
     public TransactionHeaderListView() {
+        createScreen();
+        initComponents();
+        loadData();
+    }
+
+    private void createScreen() {
         setTitle("Transaction List");
         setSize(800, 450);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        initComponents();
-        loadData();
     }
 
     private void initComponents() {
@@ -36,7 +41,7 @@ public class TransactionHeaderListView extends JFrame {
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         getContentPane().add(panel);
 
-        String[] columns = {"Invoice No", "Customer ID", "Date", "Total", "Status", "Actions"};
+        String[] columns = {"Invoice No", "Customer Name", "Date", "Net Amount", "Status", "Actions"};
         tableModel = new DefaultTableModel(null, columns) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -49,7 +54,7 @@ public class TransactionHeaderListView extends JFrame {
 
         TableColumn actionColumn = table.getColumnModel().getColumn(5);
         actionColumn.setCellRenderer(new ButtonRenderer());
-        actionColumn.setCellEditor(new ButtonEditor(new JCheckBox()));
+        actionColumn.setCellEditor(new ButtonEditor(new JCheckBox(), this));
 
         JScrollPane scrollPane = new JScrollPane(table);
         panel.add(scrollPane, BorderLayout.CENTER);
@@ -71,37 +76,39 @@ public class TransactionHeaderListView extends JFrame {
         panel.add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    private void loadData() {
+    public void loadData() {
         tableModel.setRowCount(0);
-        headerList = controller.getAllTransactionHeaders(); // perbarui data
+        headerList = controller.getAllTransactionHeadersWithCustomerName(); // pakai yang sudah JOIN
 
-        for (TransactionHeader header : headerList) {
+        headerList.forEach((header) -> {
             tableModel.addRow(new Object[]{
                 header.getInvoiceNumber(),
-                header.getCustomerID(),
+                header.getCustomerName(), // sudah ada dari hasil JOIN
                 header.getInvoiceDate(),
                 header.getTotal(),
                 header.getStatus(),
                 "Actions"
             });
-        }
+        });
 
         // Refresh UI
         SwingUtilities.invokeLater(() -> {
-            // reset editor dan renderer
             TableColumn actionColumn = table.getColumnModel().getColumn(5);
             actionColumn.setCellRenderer(new ButtonRenderer());
-            actionColumn.setCellEditor(new ButtonEditor(new JCheckBox()));
+            actionColumn.setCellEditor(new ButtonEditor(new JCheckBox(), this));
 
-            // force repaint
             table.revalidate();
             table.repaint();
         });
     }
 
     private void onAddTransaction() {
-        TransactionHeaderForm form = new TransactionHeaderForm();
+        TransactionHeaderForm form = new TransactionHeaderForm(this);
         form.setVisible(true);
+    }
+
+    private TransactionHeaderListView getCurrentForm() {
+        return this;
     }
 
     // ==== Renderer ====
@@ -120,15 +127,13 @@ public class TransactionHeaderListView extends JFrame {
         public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus,
                 int row, int column) {
-            TransactionHeader header = headerList.get(row);
+            TransactionHeader header = getHeaderAt(row); // ambil data fresh
             removeAll();
             add(viewButton);
-
             if (!TransactionStatus.VOID.getValue().equalsIgnoreCase(header.getStatus())) {
                 add(editButton);
                 add(deleteButton);
             }
-
             return this;
         }
     }
@@ -137,6 +142,7 @@ public class TransactionHeaderListView extends JFrame {
     class ButtonEditor extends DefaultCellEditor {
 
         protected final JPanel panel = new JPanel();
+        private final TransactionHeaderListView parentView;
 
         JButton viewButton = new JButton(IconUtils.getIcon("view.png", 10, 10));
         JButton editButton = new JButton(IconUtils.getIcon("edit.png", 10, 10));
@@ -144,8 +150,9 @@ public class TransactionHeaderListView extends JFrame {
 
         private TransactionHeader currentHeader;
 
-        public ButtonEditor(JCheckBox checkBox) {
+        public ButtonEditor(JCheckBox checkBox, TransactionHeaderListView parentView) {
             super(checkBox);
+            this.parentView = parentView;
             panel.setLayout(new FlowLayout(FlowLayout.CENTER, 4, 0));
             panel.add(viewButton);
             panel.add(editButton);
@@ -158,7 +165,7 @@ public class TransactionHeaderListView extends JFrame {
 
         private void handleView(ActionEvent e) {
             if (currentHeader != null) {
-                TransactionHeaderDetailView transactionHeaderDetailView = new TransactionHeaderDetailView(currentHeader);
+                TransactionHeaderDetailView transactionHeaderDetailView = new TransactionHeaderDetailView(currentHeader, getCurrentForm());
                 transactionHeaderDetailView.setVisible(true);
             }
         }
@@ -171,7 +178,7 @@ public class TransactionHeaderListView extends JFrame {
                 }
 
                 if (TransactionStatus.DRAFT.getValue().equalsIgnoreCase(currentHeader.getStatus())) {
-                    TransactionHeaderForm form = new TransactionHeaderForm();
+                    TransactionHeaderForm form = new TransactionHeaderForm(parentView);
                     form.setTransactionHeader(currentHeader);
                     form.setVisible(true);
                 } else {
@@ -214,7 +221,7 @@ public class TransactionHeaderListView extends JFrame {
         @Override
         public Component getTableCellEditorComponent(JTable table, Object value,
                 boolean isSelected, int row, int column) {
-            currentHeader = headerList.get(row);
+            currentHeader = getHeaderAt(row);
             panel.removeAll();
             panel.add(viewButton);
 
@@ -230,5 +237,9 @@ public class TransactionHeaderListView extends JFrame {
         public Object getCellEditorValue() {
             return "Actions";
         }
+    }
+
+    public TransactionHeader getHeaderAt(int row) {
+        return headerList.get(row);
     }
 }

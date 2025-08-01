@@ -11,6 +11,8 @@ public class TransactionHeader {
     private double total;
     private String status;
 
+    private String customerName; // Tabel customer
+
     // Getters & Setters
     public int getTransactionID() {
         return transactionID;
@@ -58,5 +60,13 @@ public class TransactionHeader {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
     }
 }

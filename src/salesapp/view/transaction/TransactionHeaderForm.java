@@ -1,6 +1,5 @@
 package salesapp.view.transaction;
 
-import salesapp.controller.CustomerFormController;
 import salesapp.controller.TransactionHeaderController;
 import salesapp.model.Customer;
 import salesapp.model.TransactionHeader;
@@ -12,7 +11,7 @@ import java.util.Date;
 import java.util.List;
 import salesapp.controller.CustomerListController;
 
-public class TransactionHeaderForm extends JFrame {
+public final class TransactionHeaderForm extends JFrame {
 
     private JComboBox<Customer> cmbCustomer;
     private JTextField txtInvoiceNumber;
@@ -22,18 +21,37 @@ public class TransactionHeaderForm extends JFrame {
     private final CustomerListController customerController;
     private final TransactionHeaderController headerController;
 
+    private final TransactionHeaderListView detailView;
+
     private TransactionHeader transactionHeader;
     private boolean isEditMode = false;
     private boolean isReadOnly = false;
 
-    public TransactionHeaderForm() {
+    public TransactionHeaderForm(TransactionHeaderListView detailView) {
+        this.detailView = detailView; 
         customerController = new CustomerListController();
         headerController = new TransactionHeaderController();
+        
+        createScreen();
+        initComponent();
+
+        // Default: jika tambah transaksi baru
+        if (!isEditMode) {
+            generateInvoiceNumber();
+        }
+
+        setVisible(true);
+    }
+
+    private void createScreen() {
 
         setTitle("Transaction Header Form");
         setSize(400, 250);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
+    }
+
+    private void initComponent() {
 
         JPanel panel = new JPanel(new GridLayout(4, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -63,21 +81,14 @@ public class TransactionHeaderForm extends JFrame {
         panel.add(btnSave);
 
         add(panel, BorderLayout.CENTER);
-
-        // Default: jika tambah transaksi baru
-        if (!isEditMode) {
-            generateInvoiceNumber();
-        }
-
-        setVisible(true);
     }
 
     private void loadCustomers() {
         List<Customer> customers = customerController.getAllCustomers();
         DefaultComboBoxModel<Customer> model = new DefaultComboBoxModel<>();
-        for (Customer c : customers) {
+        customers.forEach((c) -> {
             model.addElement(c);
-        }
+        });
         cmbCustomer.setModel(model);
     }
 
@@ -118,6 +129,7 @@ public class TransactionHeaderForm extends JFrame {
                 boolean success = headerController.saveTransactionHeader(transactionHeader);
                 if (success) {
                     JOptionPane.showMessageDialog(this, "Header transaksi berhasil disimpan.");
+                    detailView.loadData();
                     dispose(); // tutup form
                 } else {
                     JOptionPane.showMessageDialog(this, "Gagal menyimpan transaksi.");
@@ -127,6 +139,7 @@ public class TransactionHeaderForm extends JFrame {
                 boolean success = headerController.updateTransactionHeader(transactionHeader);
                 if (success) {
                     JOptionPane.showMessageDialog(this, "Header transaksi berhasil diperbarui.");
+                    detailView.loadData();
                     dispose();
                 } else {
                     JOptionPane.showMessageDialog(this, "Gagal memperbarui transaksi.");

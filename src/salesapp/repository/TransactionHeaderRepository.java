@@ -121,4 +121,8 @@ public class TransactionHeaderRepository {
             }
         }
     }
+
+    public List<TransactionHeader> getAllHeadersWithCustomerName() {
+        return dao.getAllWithCustomerName();
+    }
 }

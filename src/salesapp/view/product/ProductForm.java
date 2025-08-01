@@ -11,11 +11,13 @@ public class ProductForm extends JFrame {
     private JTextField tfCode, tfName, tfPrice, tfStock;
     private JButton btnSave;
     private final ProductFormController controller = new ProductFormController();
+    private final ProductListView displayView;
 
     private boolean isEditMode = false;
     private int productId = 0;
 
-    public ProductForm() {
+    public ProductForm(ProductListView displayView) {
+        this.displayView = displayView;
         createScreen();
         initComponents();
     }
@@ -63,7 +65,10 @@ public class ProductForm extends JFrame {
             Product product = new Product(productId, code, name, price, stock);
 
             if (isEditMode) {
-                controller.updateProduct(product, this::dispose);
+                controller.updateProduct(product, () -> {
+                    clearForm();
+                    dispose();
+                });
             } else {
                 controller.saveProduct(product, this::clearForm);
             }
@@ -78,6 +83,8 @@ public class ProductForm extends JFrame {
         tfName.setText("");
         tfPrice.setText("");
         tfStock.setText("");
+
+        displayView.loadProductData();
     }
 
     public void setProduct(Product product) {

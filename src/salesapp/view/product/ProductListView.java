@@ -1,6 +1,5 @@
 package salesapp.view.product;
-
-import salesapp.dao.ProductDAO;
+ 
 import salesapp.model.Product;
 
 import javax.swing.*;
@@ -11,13 +10,12 @@ import java.util.List;
 import salesapp.controller.ProductListController;
 import salesapp.utils.IconUtils;
 
-public class ProductListView extends JFrame {
+public final class ProductListView extends JFrame {
 
     private final ProductListController controller = new ProductListController();
 
     private JTable table;
-    private DefaultTableModel tableModel;
-    private final ProductDAO productDAO = new ProductDAO();
+    private DefaultTableModel tableModel; 
 
     public ProductListView() {
         createScreen();
@@ -72,7 +70,7 @@ public class ProductListView extends JFrame {
         panel.add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    private void loadProductData() {
+    public void loadProductData() {
         tableModel.setRowCount(0); // clear existing data
         List<Product> products = controller.getAllProducts();
 
@@ -88,8 +86,12 @@ public class ProductListView extends JFrame {
     }
 
     private void onAddProduct() {
-        ProductForm form = new ProductForm();
+        ProductForm form = new ProductForm(this);
         form.setVisible(true);
+    }
+    
+    private ProductListView getCurrentForm (){
+        return this;
     }
 
     // ==== Renderer for Action Buttons ====
@@ -136,7 +138,7 @@ public class ProductListView extends JFrame {
             if (currentCode != null) {
                 Product product = controller.getProductByCode(currentCode);
                 if (product != null) {
-                    ProductForm form = new ProductForm();
+                    ProductForm form = new ProductForm(getCurrentForm());
                     form.setProduct(product);
                     form.setVisible(true);
                 }

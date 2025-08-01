@@ -1,6 +1,5 @@
 package salesapp.view.transaction.line;
-
-import salesapp.controller.ProductFormController;
+ 
 import salesapp.controller.TransactionLineController;
 import salesapp.model.Product;
 import salesapp.model.TransactionLine;
@@ -31,11 +30,23 @@ public class TransactionLineForm extends JFrame {
         this.transactionId = transactionId;
         this.detailView = detailView;
 
-        setTitle("Add Transaction Line");
+        createScreen();
+        initComponent();
+
+        loadProducts();
+        updateProductPrice(); // inisialisasi awal
+
+        setVisible(true);
+    }
+
+    private void createScreen() {
+        setTitle("Add Transaction Product");
         setSize(400, 400);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
+    }
 
+    private void initComponent() {
         JPanel panel = new JPanel(new GridLayout(9, 2, 10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
@@ -54,8 +65,6 @@ public class TransactionLineForm extends JFrame {
 
         txtNetPrice.setEditable(false);
         txtAmount.setEditable(false);
-
-        loadProducts();
 
         // Event listeners
         cmbProduct.addActionListener(e -> updateProductPrice());
@@ -89,18 +98,14 @@ public class TransactionLineForm extends JFrame {
 
         add(panel, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
-
-        updateProductPrice(); // inisialisasi awal
-
-        setVisible(true);
     }
 
     private void loadProducts() {
         List<Product> products = productController.getAllProducts();
         DefaultComboBoxModel<Product> model = new DefaultComboBoxModel<>();
-        for (Product p : products) {
+        products.forEach((p) -> {
             model.addElement(p);
-        }
+        });
         cmbProduct.setModel(model);
     }
 

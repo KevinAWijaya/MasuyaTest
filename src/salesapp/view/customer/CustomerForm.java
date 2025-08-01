@@ -11,10 +11,12 @@ public class CustomerForm extends JFrame {
     private JTextField tfCode, tfName, tfAddress, tfProvince, tfCity, tfDistrict, tfSubdistrict, tfPostal;
     private JButton btnSave;
     private final CustomerFormController controller = new CustomerFormController();
+    private final CustomerListView displayView;
 
     private boolean isEditMode = false;
 
-    public CustomerForm() {
+    public CustomerForm(CustomerListView displayView) {
+        this.displayView = displayView;
         initScreen();
         initComponents();
     }
@@ -82,6 +84,7 @@ public class CustomerForm extends JFrame {
 
         if (isEditMode) {
             controller.updateCustomer(customer, () -> {
+                displayView.loadCustomerData();
                 dispose();
             });
         } else {
@@ -98,10 +101,7 @@ public class CustomerForm extends JFrame {
         tfDistrict.setText("");
         tfSubdistrict.setText("");
         tfPostal.setText("");
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new CustomerForm().setVisible(true));
+        displayView.loadCustomerData();
     }
 
     public void setCustomer(Customer customer) {
