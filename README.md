@@ -1,6 +1,6 @@
 # SalesApp Java (Desktop)
 
-A Java Swing desktop application for managing sales, including products, transactions, and reporting features using the MVC architecture (DAO, Repository, Controller layers).
+A Java Swing desktop application for managing sales, including products, customers, and transactions features using the MVC architecture (DAO, Repository, Controller layers).
 
 ---
 
@@ -36,21 +36,12 @@ A Java Swing desktop application for managing sales, including products, transac
 
 ---
 
-## 🚀 How to Run
-
-1. Buka project ini menggunakan **NetBeans 8.2**
-2. Build project (`Clean and Build`)
-3. Jalankan `SaleApp.java`  
-4. Pastikan koneksi database aktif dan file SQL sudah dieksekusi
-
----
-
 ## 🧪 Testing
 
 Untuk pengujian:
 - Input produk via `ProductForm`
 - Simpan transaksi dan cek data
-- Uji flow add → commit → read → edit → delete
+- Uji flow add → save → read → edit → delete
 
 ---
  
